@@ -1,4 +1,3 @@
-// get-todos , get-remain-todo
 const Users= require("../module/Users.modules");
 
 // get_todos method 

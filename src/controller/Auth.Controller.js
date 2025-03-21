@@ -1,22 +1,18 @@
-// sign in out up 3 methods
 const bcrypt = require("bcrypt");
 const Users = require("../module/Users.modules")
 const jwt = require("jsonwebtoken")
 const expireDate= 3*24*60*60;
 
-// token methode
+// token method
 /************/
-const creatToken=(id)=>{
-    return jwt.sign({ id }, "task 9", {
-           expiresIn: expireDate,
-      });
-}
+
 
 //signIn
 const signIn =async(req,res)=>{
     try{
         const { email , password} = req.body;
         const user = await Users.findOne({email});
+        const userid=req.userId;
         if(!user){
             return res.status(400).send( 
                 {
@@ -24,7 +20,8 @@ const signIn =async(req,res)=>{
                 message: "wrong email"
                 }) ;
         }
-        const auth = await bcrypt.compare(password , user.password)
+      
+        const auth = bcrypt.compare(password , user.password)
        if(!auth){
         return res.status(400).send( 
             {
@@ -33,6 +30,11 @@ const signIn =async(req,res)=>{
             }) ;
        }
        else{
+        const creatToken=(userId)=>{
+            return jwt.sign({ userId }, "task 9", {
+                   expiresIn: expireDate,
+              });
+        }
         const token = creatToken(user._id);
         res.cookie("token", token, { httpOnly: true, maxAge: expireDate * 1000 });
         return res.status(200).send( 
@@ -57,10 +59,11 @@ const signUp =async(req,res)=>{
     try{
         console.log("Signup route hit!");
         const {username , email , password} = req.body;
-       // const bcrypt = await bcrypt.genSalt(10);
-        //const hashedPassword = await bcrypt.hash(password, bcrypt);
-        const newUser= new Users({username , email , password : password});
+        const bcryptt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, bcryptt);
+        const newUser= new Users({username , email , password : hashedPassword});
         await newUser.save();
+        
         return res.status(201).send( 
             {
             success : true ,

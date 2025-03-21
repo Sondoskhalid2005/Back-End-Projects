@@ -12,13 +12,10 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-/*/app.use((err, req, res, next) => {
-  console.error("Error occurred:", err);
-  res.status(500).json({ success: false, message: "Internal Server Error", error: err.message });
-});/*/
+
 app.use("/auth", authRouter);
-app.use("*", checkUser);
-app.use("/user", userRouter);
+//app.use("*", checkUser);
+app.use("/user" ,userRouter);
 app.use("/todo", todoRouter);
 
 const PORT = 3000;

@@ -1,11 +1,13 @@
-// add-todo , change-status , Delete  , getTodoById(Retrieve a specific todo)
 const Users= require("../module/Users.modules");
 const Todo=require("../module/Todo.modules")
 
 // add-todo method
 const add_todo= async(req,res)=>{
     const {title , discription , status}=req.body;
-    const userId=req.userId;
+    
+        const userId=req.userId;
+        // console.log(userId);
+    console.log(userId)
     try{
         const user=await Users.findById(userId); 
         if(!user){ 
@@ -14,7 +16,7 @@ const add_todo= async(req,res)=>{
                 msg: "User not found",
               });
         }
-            const newTodo= new Todo(title , discription , status, userId);
+            const newTodo= new Todo({title , discription , status, userId});
             user.todos.push(newTodo._id);
             await newTodo.save();
             await user.save();
@@ -35,7 +37,7 @@ const add_todo= async(req,res)=>{
 // change_status method
 const change_status= async(req,res)=>{
 try{
-    const todoid=parent(req.param.todoid);
+    const todoid=parseInt(req.params.todoid);
     const {status}=req.body;
     const userid=req.userId
     const user= await Users.findById(userid);
@@ -77,7 +79,7 @@ return res.status(201).send({
 // change_status method
 const delete_todo=async(req,res)=>{
     try{
-        const todoid=parseInt(req.param.todoid)
+        const todoid=parseInt(req.params.todoid)
         const userid=req.userId
         const todo=await Todo.findById(todoid)
         if (!todo){
@@ -107,7 +109,7 @@ const delete_todo=async(req,res)=>{
 // getTodoById method
 const getTodoById=async(req,res)=>{
     try{
-        const todoid=parseInt(req.param.todoid)
+        const todoid=parseInt(req.params.todoid)
         const userid =req.userId
         const todo= await Todo.findById(todoid)
         if (!todo){
