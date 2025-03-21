@@ -18,15 +18,15 @@ const signIn =async(req,res)=>{
         const { email , password} = req.body;
         const user = await Users.findOne({email});
         if(!user){
-            return req.status(400).send( 
+            return res.status(400).send( 
                 {
                 status:400 ,
                 message: "wrong email"
                 }) ;
         }
-        const auth = bcrypt.compare(password , user.password)
+        const auth = await bcrypt.compare(password , user.password)
        if(!auth){
-        return req.status(400).send( 
+        return res.status(400).send( 
             {
             status:400 ,
             message: "wrong password"
@@ -35,7 +35,7 @@ const signIn =async(req,res)=>{
        else{
         const token = creatToken(user._id);
         res.cookie("token", token, { httpOnly: true, maxAge: expireDate * 1000 });
-        return req.status(200).send( 
+        return res.status(200).send( 
             {
             success : true ,
             message: "signed in seccessfully" , 
@@ -44,7 +44,7 @@ const signIn =async(req,res)=>{
        }
        }
     catch(error){
-     req.status(500).send( 
+     res.status(500).send( 
         {
         status:500 ,
         message: "server error"
@@ -57,9 +57,11 @@ const signUp =async(req,res)=>{
     try{
         console.log("Signup route hit!");
         const {username , email , password} = req.body;
+       // const bcrypt = await bcrypt.genSalt(10);
+        //const hashedPassword = await bcrypt.hash(password, bcrypt);
         const newUser= new Users({username , email , password : password});
         await newUser.save();
-        req.status(201).send( 
+        return res.status(201).send( 
             {
             success : true ,
             message: "User registered successfully!" ,
@@ -68,7 +70,7 @@ const signUp =async(req,res)=>{
 
     }
     catch(error){
-        req.status(500).send( 
+        res.status(500).send( 
             {
             status:500 ,
             message: "server error"
@@ -80,14 +82,14 @@ const signUp =async(req,res)=>{
 const signOut = async (req,res)=>{
     try{
         res.cookie("token", "", { maxAge: 1 });
-        return req.status(200).send( 
+        return res.status(200).send( 
             {
             success:true ,
             message: "user signed out seccessfully"
             });
     }
     catch(error){
-        req.status(500).send( 
+        res.status(500).send( 
             {
             status:500 ,
             message: "server error"

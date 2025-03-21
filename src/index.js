@@ -6,22 +6,22 @@ const userRouter = require("./routers/Users.Routers.js"); // ✅ Correct import
 const todoRouter = require("./routers/Todo.Router.js"); // ✅ Correct import
 const authRouter = require("./routers/Auth.Router.js");
 
-//const { checkUser } = require("./middleware/Auth.middleware.js");
+const { checkUser } = require("./middleware/Auth.middleware.js");
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use((err, req, res, next) => {
+/*/app.use((err, req, res, next) => {
   console.error("Error occurred:", err);
   res.status(500).json({ success: false, message: "Internal Server Error", error: err.message });
-});
+});/*/
 app.use("/auth", authRouter);
-//app.use("*", checkUser);
+app.use("*", checkUser);
 app.use("/user", userRouter);
 app.use("/todo", todoRouter);
 
-const PORT = 4000;
+const PORT = 3000;
 
 app.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);

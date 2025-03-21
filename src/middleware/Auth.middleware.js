@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const Users = require("../module/Users.modules");
 
 const checkUser = async (req, res, next) => {
+  if (req.path.startsWith("/auth")) return next();
   const token = req.cookies.token;
   if (!token)
     return res
