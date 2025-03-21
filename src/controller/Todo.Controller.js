@@ -6,7 +6,6 @@ const add_todo= async(req,res)=>{
     const {title , discription , status}=req.body;
     
         const userId=req.userId;
-        // console.log(userId);
     console.log(userId)
     try{
         const user=await Users.findById(userId); 
