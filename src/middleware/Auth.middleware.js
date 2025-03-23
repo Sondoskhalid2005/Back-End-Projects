@@ -1,11 +1,13 @@
 const jwt = require("jsonwebtoken");
 const Users = require("../module/Users.modules");
+const mongoose = require("mongoose");
 
 const checkUser = async (req, res, next) => {
-  
+  console.log("here1");
 const token = req.cookies.token
   try{
-    console.log(token)
+    console.log("here2");
+    console.log("token ",token)
     if (!token)
     return res
       .status(401)
@@ -14,27 +16,29 @@ const token = req.cookies.token
          message: "Unauthorized => no token provided" 
            });
   let decoded = jwt.verify(token, "task 9");
-  req.userId = decoded.userId;
+  console.log("Decoded Token:", decoded);
            
-  if (!decoded)
+  if (!decoded||!decoded.userId)
     return res
       .status(401)
       .json({ 
         success: false, 
         message: "Unauthorized => invalid token"
            });
-           const user = await Users.findById(decoded.userId || decoded.id || decoded._id);
-            
+         
+           req.userId = decoded.userId;
+          // const userid= new mongoose.Types.ObjectId(decoded.userId);
+           const user = await Users.findById(req.userId);
+    
            if (!user) {
-             return res.status(404).json({ status: 404, message: "User not found" });
+             return res.status(404).json({ status: 404, message: " // User not found" });
            }
-           
-           
+        console.log("Extracted userId:", req.userId);
            next();
 }catch(error){
     res.status(500).send({
-      status: failed ,
-      msg:"server error"
+      status: 500 ,
+      msg:"server  2error"
     })
   }
 };

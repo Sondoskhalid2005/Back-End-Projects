@@ -1,25 +1,43 @@
 const Users= require("../module/Users.modules");
 const Todo=require("../module/Todo.modules")
+const mongoose = require("mongoose");
 
 // add-todo method
 const add_todo= async(req,res)=>{
     const {title , discription , status}=req.body;
-    
-        const userId=req.userId;
-    console.log(userId)
+        const useriid=req.userId;
+    console.log("user id extracted",typeof(useriid))
     try{
-        const user=await Users.findById(userId); 
+     
+        try {
+            // ✅ Validate user ID first before converting it to ObjectId
+            if (!mongoose.Types.ObjectId.isValid(useriid)) {
+                return res.status(400).send({
+                    status: 400,
+                    msg: "Invalid user ID format",
+                });
+            }
+        }catch(error){
+            res.status(500).send({
+                status: 500 ,
+                error: "server error 33",
+                 
+               })
+        }
+        const userid= new mongoose.Types.ObjectId(useriid);
+        const user=await Users.findById(userid); 
         if(!user){ 
             return res.status(404).send({
                 status: 404,
                 msg: "User not found",
               });
         }
-            const newTodo= new Todo({title , discription , status, userId});
-            user.todos.push(newTodo._id);
+         console.log("begor saving");
+            const newTodo= new Todo({title , discription , status, userId:userid});
             await newTodo.save();
+            user.todos.push(newTodo._id);
             await user.save();
-        
+            console.log("after saving");
             return res.status(201).send({
            "success": true,
             message: "Todo added successfully",
@@ -33,6 +51,7 @@ const add_todo= async(req,res)=>{
            })
     }
 }
+
 // change_status method
 const change_status= async(req,res)=>{
 try{

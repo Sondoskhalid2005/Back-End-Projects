@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/auth", authRouter);
-//app.use("*", checkUser);
+app.use("*", checkUser);
 app.use("/user" ,userRouter);
 app.use("/todo", todoRouter);
 
