@@ -5,8 +5,10 @@ const expireDate= 3*24*60*60;
 
 // token method
 /************/
-
-
+const creatToken=(userId)=>{
+    return jwt.sign({ userId }, "task 9", {
+           expiresIn: expireDate,
+      }); }
 //signIn
 const signIn =async(req,res)=>{
     try{
@@ -22,6 +24,8 @@ const signIn =async(req,res)=>{
         }
       
         const auth = bcrypt.compare(password , user.password)
+        console.log(auth);
+        
        if(!auth){
         return res.status(400).send( 
             {
@@ -29,12 +33,6 @@ const signIn =async(req,res)=>{
             message: "wrong password"
             }) ;
        }
-       else{
-        const creatToken=(userId)=>{
-            return jwt.sign({ userId }, "task 9", {
-                   expiresIn: expireDate,
-              });
-        }
         const token = creatToken(user._id);
         res.cookie("token", token, { httpOnly: true, maxAge: expireDate * 1000 });
         return res.status(200).send( 
@@ -43,7 +41,6 @@ const signIn =async(req,res)=>{
             message: "signed in seccessfully" , 
             data: user
             }); 
-       }
        }
     catch(error){
      res.status(500).send( 

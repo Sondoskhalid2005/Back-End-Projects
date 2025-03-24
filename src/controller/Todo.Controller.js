@@ -1,43 +1,35 @@
-const Users= require("../module/Users.modules");
+const users= require("../module/Users.modules");
 const Todo=require("../module/Todo.modules")
 const mongoose = require("mongoose");
 
 // add-todo method
 const add_todo= async(req,res)=>{
-    const {title , discription , status}=req.body;
-        const useriid=req.userId;
-    console.log("user id extracted",typeof(useriid))
     try{
-     
-        try {
-            // ✅ Validate user ID first before converting it to ObjectId
-            if (!mongoose.Types.ObjectId.isValid(useriid)) {
-                return res.status(400).send({
-                    status: 400,
-                    msg: "Invalid user ID format",
-                });
-            }
-        }catch(error){
-            res.status(500).send({
-                status: 500 ,
-                error: "server error 33",
-                 
-               })
-        }
-        const userid= new mongoose.Types.ObjectId(useriid);
-        const user=await Users.findById(userid); 
+        let bodyy=req.body;
+        bodyy.userId=req.userId ;
+        let userid=req.userId;
+        const newTodo = await Todo.create(bodyy);
+        console.log("user id extracted",typeof(userid))
+    
+       // const userid= new mongoose.Types.ObjectId(userid);
+        const user=await users.findById(userid); 
+        await users.findByIdAndUpdate(newTodo.userId,  { $push: { todos: newTodo._id} },)
+
         if(!user){ 
             return res.status(404).send({
                 status: 404,
-                msg: "User not found",
+                msg: "user not found",
               });
         }
-         console.log("begor saving");
-            const newTodo= new Todo({title , discription , status, userId:userid});
-            await newTodo.save();
-            user.todos.push(newTodo._id);
-            await user.save();
-            console.log("after saving");
+         console.log("befor saving" , userid);
+           
+         
+          //const newTodo = new Todo({title  , description , status, userId:userid});
+            console.log("1", newTodo._id)
+            //user.todos.push(newTodo._id);
+             console.log("before saving user")
+            // await Todo.findByIdAndUpdate(user._id ,  { $push: { newTodo} },)
+             console.log("before saving newtodo")
             return res.status(201).send({
            "success": true,
             message: "Todo added successfully",
@@ -46,72 +38,89 @@ const add_todo= async(req,res)=>{
     }catch(error){
         res.status(500).send({
             status: 500 ,
-            error: "server error",
+            error: "server error "+ error.message 
              
            })
     }
 }
-
 // change_status method
-const change_status= async(req,res)=>{
-try{
-    const todoid=parseInt(req.params.todoid);
-    const {status}=req.body;
-    const userid=req.userId
-    const user= await Users.findById(userid);
-    const todo= await Todo.findById(todoid)
-if(!user){
-    return res.status(404).send({
-        status: 404 ,
-        error: "user not found",
-         
-       })
-}
-if (!todo){
-    return res.status(404).send({
-        status: 404 ,
-        error: "todo not found to edit its status !",
-       })
-}
-if(todo.user!=userid){
-    return res.status(401).send({
-        status: 401 ,
-        error: "unouthorized access !",
-       })
-}
-
-todo.status=status;
-await todo.save();
-return res.status(201).send({
-    "success": true,
-    "message": "Todo status updated successfully"
-  });
-
-}catch(error){
-    res.status(500).send({
-        status: 500 ,
-        error: "server error",   
-       })
-}
-}
+const change_status = async(req,res) => {
+    try{
+        let id = req.params.id;
+        console.log("hi1", id, req.params.id);
+        
+        const {status} = req.body;
+        console.log("hi2", status);
+        
+        let userid = req.userId
+        userid = new mongoose.Types.ObjectId(userid);
+        console.log("hi3", userid ); //same
+        
+        const user = await users.findById(userid);
+        console.log("hi4", user);
+        let todoId = new mongoose.Types.ObjectId(id);
+        const todo = await Todo.findById(todoId)
+        console.log("hi5", todo.userId); 
+        
+        if(!user){
+            return res.status(404).send({
+                status: 404,
+                error: "user not found",
+            })
+        }
+        
+        if (!todo){
+            return res.status(404).send({
+                status: 404,
+                error: "todo not found to edit its status !",
+            })
+        }
+        console.log("heree");
+        
+        if(todo.userId.toString()!== userid.toString()){
+            return res.status(401).send({
+                status: 401,
+                error: "unouthorized access xxcxx!",
+            })
+        }
+        console.log("heree 1");
+        
+        await Todo.findByIdAndUpdate(id, { status: status });
+        console.log("heree2");
+        
+        return res.status(201).send({
+            "success": true,
+            "message": "Todo status updated successfully"
+        });
+    
+    }catch(error){
+        res.status(500).send({
+            status: 500,
+            error: "server error: " + error.message,
+        })
+    }
+    }
 // change_status method
 const delete_todo=async(req,res)=>{
     try{
-        const todoid=parseInt(req.params.todoid)
+        let id=req.params.id;
         const userid=req.userId
-        const todo=await Todo.findById(todoid)
+        const todoId= new mongoose.Types.ObjectId(id)
+        const todo=await Todo.findById(todoId)
+
         if (!todo){
             return res.status(404).send({
                 status: 404 ,
                 error: "todo not found to delete it!",
                })
         }
-        if(todo.user!=userid){
+        if(todo.userId.toString() !== userid.toString()){
             return res.status(401).send({
                 status: 401 ,
                 error: "unouthorized access !",
                })
         }
+        
         await todo.deleteOne();
         res.status(200).send({
            "success": true,
@@ -127,16 +136,17 @@ const delete_todo=async(req,res)=>{
 // getTodoById method
 const getTodoById=async(req,res)=>{
     try{
-        const todoid=parseInt(req.params.todoid)
+        let id=req.params.id
         const userid =req.userId
-        const todo= await Todo.findById(todoid)
+        const todoId = new mongoose.Types.ObjectId(id);
+        const todo= await Todo.findById(todoId)
         if (!todo){
             return res.status(404).send({
                 status: 404 ,
                 error: "todo not found!",
                })
         }
-        if(todo.user!=userid){
+        if(todo.userId.toString() !== userid.toString()){
             return res.status(401).send({
                 status: 401 ,
                 error: "unouthorized access!",
@@ -149,7 +159,7 @@ const getTodoById=async(req,res)=>{
     }catch(error){
         res.status(500).send({
             status: 500 ,
-            error: "server error",   
+            error: "server error controler todo",   
            });
     }
 }

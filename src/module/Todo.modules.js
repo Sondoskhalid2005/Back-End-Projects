@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const { status } = require("express/lib/response");
-const todoSchema = new mongoose.Schema({
+let todoSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
     unique: true,
   },
-  discription: {
+  description: {
     type: String,
     required: true,
   },
@@ -18,7 +18,7 @@ const todoSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Types.ObjectId,
     ref: "Users",
-    require: true,
+    required: true,
   },
 });
 todoSchema.pre("save",async function(next){
